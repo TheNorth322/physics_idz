@@ -6,12 +6,20 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import sys
 
-materials = {'Железо': 0.000449,
-             'Алюминий': 0.000897,
-             'Медь': 0.000385,
-             'Сталь': 0.000468,
-             'Латунь': 0.000377,
-             'Чугун': 0.000554}
+thermal_conductivities = {'Железо': 92,
+                        'Алюминий': 230,
+                        'Медь': 380,
+                        'Сталь': 52,
+                        'Латунь': 110,
+                        'Чугун': 56}
+
+def get_bio_num(tcond, radius, heat_transfer):
+    bio_num = tcond*radius / heat_transfer
+    return bio_num
+
+def get_D_param(bio_num):
+    D = (21*bio_num*(bio_num+5))/(2*bio_num**2 + 14*bio_num + 35)
+    return D
 
 def make_calc():
     result_entry.delete(0,"end")
@@ -21,30 +29,23 @@ def make_calc():
     start_temperature = 400 # начальная температура шара
     end_temperature = 300 # конечная температура шара
     air_temperature = 280 # температура воздуха
-    air_thermal_conductivity = 0.0247 # данные из таблицы теплопроводности воздуха
     radius = float(radius_entry.get()) # радиус шара
     material = choice.get()
-    thermal_conductivity = float(tconductivity_entry.get()) # for change
+    heat_transfer = float(heat_transfer_entry.get()) # for change
     ball_area = 4*pi*(radius**2)
     
+    bio_num = get_bio_num(thermal_conductivities[material], radius, heat_transfer)
+    D = get_D_param(bio_num)
+
     while (end_temperature != start_temperature):
 
-        k = get_k(thermal_conductivity, ball_area, materials[material])
-        time = get_time(k, start_temperature, end_temperature, air_temperature)
+        time = (radius/(-heat_transfer*D))*log((air_temperature-end_temperature)/(D/6*(air_temperature-start_temperature)*((bio_num+2)/bio_num)-1))
         x.append(time)
         y.append(end_temperature+10)
         end_temperature += 10
 
     update_plot(x, y)
     result_entry.insert(0, str(x[0]))
-
-def get_k(thermal_conductivity, area, heat_capacity):
-    k = (thermal_conductivity*area)/heat_capacity
-    return k
-
-def get_time(k, t0, t1, ts):
-    t = (-1/k)*log((t1-ts)/(t0-ts))
-    return t
 
 def update_plot(x, y):
     global figure, plot, canvas
@@ -85,14 +86,14 @@ radius_entry.insert(0, "0.01")
 Label(data_frame, text="Материал", bg="white", font="Arial 15 italic").pack(anchor = W)
 choice = StringVar()
 choice.set('Железо')
-materials_list = OptionMenu(data_frame, choice, *materials)
+materials_list = OptionMenu(data_frame, choice, *thermal_conductivities)
 materials_list.config(bg="white", font="Arial 15")
 materials_list.pack(pady=5, fill=X, padx=5, anchor = W)
 
-Label(data_frame, text="Коэффициент теплопроводности", bg="white", font="Arial 15 italic").pack(anchor = W)
-tconductivity_entry = Entry(data_frame, font="Arial 15", relief="groove", borderwidth=3, width=10)
-tconductivity_entry.pack(pady=5, fill=X, padx=5, anchor = W)
-tconductivity_entry.insert(0, "0.01")
+Label(data_frame, text="Коэффициент теплоотдачи", bg="white", font="Arial 15 italic").pack(anchor = W)
+heat_transfer_entry = Entry(data_frame, font="Arial 15", relief="groove", borderwidth=3, width=10)
+heat_transfer_entry.pack(pady=5, fill=X, padx=5, anchor = W)
+heat_transfer_entry.insert(0, "0.000001")
 
 Label(data_frame, text="Результат, с", bg="white", font="Arial 15 italic").pack(anchor = W)
 result_entry = Entry(data_frame, font="Arial 15", relief="groove", borderwidth=3, width=10)
