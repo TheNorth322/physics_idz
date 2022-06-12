@@ -1,11 +1,9 @@
 from math import pi, log
 from tkinter import *
-from tkinter import filedialog, messagebox
-from tkinter.ttk import Progressbar
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-import sys
 
+#Термопроводности материалов
 thermal_conductivities = {'Железо': 92,
                         'Алюминий': 230,
                         'Медь': 380,
@@ -13,16 +11,17 @@ thermal_conductivities = {'Железо': 92,
                         'Латунь': 110,
                         'Чугун': 56}
 
-entry_statuses = ["Full","Full"]
-
+# Рассчет числа Био
 def get_bio_num(tcond, radius, heat_transfer):
     bio_num = tcond*radius / heat_transfer
     return bio_num
 
+# Рассчет параметра D
 def get_D_param(bio_num):
     D = (21*bio_num*(bio_num+5))/(2*bio_num**2 + 14*bio_num + 35)
     return D
 
+# Рассчет результата и данных графика при клике на кнопку
 def make_calc():
     result_entry.delete(0,"end")
     x = []
@@ -36,11 +35,12 @@ def make_calc():
     start_temperature = 400 # начальная температура шара
     end_temperature = 300 # конечная температура шара
     air_temperature = 280 # температура воздуха
+    
     radius = float(radius_entry.get()) # радиус шара
     material = choice.get()
     heat_transfer = float(heat_transfer_entry.get()) # for change
+    
     ball_area = 4*pi*(radius**2)
-
     bio_num = get_bio_num(thermal_conductivities[material], radius, heat_transfer)
     D = get_D_param(bio_num)
 
@@ -54,6 +54,7 @@ def make_calc():
     update_plot(x, y)
     result_entry.insert(0, str(x[0]))
 
+#Обновление графика 
 def update_plot(x, y):
     global figure, plot, canvas
     figure.delaxes(plot)
@@ -79,10 +80,10 @@ window.resizable(0,0)
 window.config(bg = 'white')
 
 plot_frame = Frame(window, bg="white")
-plot_frame.pack(side=LEFT) # for plot
+plot_frame.pack(side=LEFT)
 
 data_frame = Frame(window, bg="white")
-data_frame.pack(side=LEFT, fill=Y, padx = 15, pady = 15) # for data input
+data_frame.pack(side=LEFT, fill=Y, padx = 15, pady = 15)
 
 Label(data_frame, text="Рассчет времени остывания\n шарика", bg="white", font="Arial 15 bold").pack(side=TOP, anchor=N) 
 Label(data_frame, text="Радиус шарика, м", bg="white", font="Arial 15 italic").pack(anchor = W)
@@ -121,7 +122,7 @@ toolbar = NavigationToolbar2Tk(canvas, plot_frame)
 toolbar.update()
 canvas.get_tk_widget().pack()
 
-Label(data_frame, text="@Горшков Данил, АВТ-113", bg="white", font="Arial 10 italic").pack(anchor = W, side = BOTTOM)
+Label(data_frame, text="@Горшков Данил, АВТ-113", bg="white", font="Arial 10 italic").pack(anchor = E, side = BOTTOM)
 start_button = Button(data_frame, text="Рассчитать время", bg="white", font="Arial 15 bold", command=make_calc)
 start_button.pack(pady=5, fill=X, padx=5, side = BOTTOM, anchor=S)
 window.mainloop()
