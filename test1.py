@@ -13,6 +13,8 @@ thermal_conductivities = {'Железо': 92,
                         'Латунь': 110,
                         'Чугун': 56}
 
+entry_statuses = ["Full","Full"]
+
 def get_bio_num(tcond, radius, heat_transfer):
     bio_num = tcond*radius / heat_transfer
     return bio_num
@@ -25,6 +27,11 @@ def make_calc():
     result_entry.delete(0,"end")
     x = []
     y = []
+    
+    if (radius_entry.get() == ''):
+        radius_entry.insert(0,"0.01")
+    if (heat_transfer_entry.get() == ''):
+        heat_transfer_entry.insert(0,"0.000001")
 
     start_temperature = 400 # начальная температура шара
     end_temperature = 300 # конечная температура шара
@@ -33,7 +40,7 @@ def make_calc():
     material = choice.get()
     heat_transfer = float(heat_transfer_entry.get()) # for change
     ball_area = 4*pi*(radius**2)
-    
+
     bio_num = get_bio_num(thermal_conductivities[material], radius, heat_transfer)
     D = get_D_param(bio_num)
 
@@ -71,11 +78,11 @@ window.geometry("1000x600+560+200")
 window.resizable(0,0)
 window.config(bg = 'white')
 
-data_frame = Frame(window, bg="white")
-data_frame.pack(side=LEFT, fill=Y, padx = 15, pady = 15) # for data input
-
 plot_frame = Frame(window, bg="white")
 plot_frame.pack(side=LEFT) # for plot
+
+data_frame = Frame(window, bg="white")
+data_frame.pack(side=LEFT, fill=Y, padx = 15, pady = 15) # for data input
 
 Label(data_frame, text="Рассчет времени остывания\n шарика", bg="white", font="Arial 15 bold").pack(side=TOP, anchor=N) 
 Label(data_frame, text="Радиус шарика, м", bg="white", font="Arial 15 italic").pack(anchor = W)
