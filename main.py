@@ -1,50 +1,55 @@
 from math import pi, log
 from tkinter import *
-from tkinter import filedialog, messagebox
-from tkinter.ttk import Progressbar
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-import sys
 
-materials = {'Железо': 0.000449,
-             'Алюминий': 0.000897,
-             'Медь': 0.000385,
-             'Сталь': 0.000468,
-             'Латунь': 0.000377,
-             'Чугун': 0.000554}
+heat_capacities = {'Железо': 452,
+            'Алюминий': 897,
+            'Медь': 420,
+            'Сталь': 468,
+            'Латунь': 400,
+            'Чугун': 540,
+            'Олово': 228,
+            'Свинец': 128}
 
 def make_calc():
     result_entry.delete(0,"end")
     x = []
     y = []
-
+    
     start_temperature = 400 # начальная температура шара
     end_temperature = 300 # конечная температура шара
     air_temperature = 280 # температура воздуха
-    air_thermal_conductivity = 0.0247 # данные из таблицы теплопроводности воздуха
-    radius = float(radius_entry.get()) # радиус шара
-    material = choice.get()
-    thermal_conductivity = float(tconductivity_entry.get()) # for change
-    ball_area = 4*pi*(radius**2)
+    
+    try:
+        radius = float(radius_entry.get()) # радиус шара
+    except:
+        radius_entry.config(highlightthickness=2, highlightbackground="red")
+        return
+
+    try:
+        heat_transfer = float(heat_transfer_entry.get()) # коэффициент теплоотдачи
+    except:
+        heat_transfer_entry.config(highlightthickness=2, highlightbackground="red")
+        return
+
+    heat_capacity = heat_capacities[choice.get()]
+    area = 4*pi*(radius**2)
     
     while (end_temperature != start_temperature):
 
-        k = get_k(thermal_conductivity, ball_area, materials[material])
-        time = get_time(k, start_temperature, end_temperature, air_temperature)
-        x.append(time)
+        k = (heat_transfer*area)/heat_capacity
+        t = (-1/k)*log((end_temperature-air_temperature)/(start_temperature-air_temperature))
+        
+        x.append(t)
         y.append(end_temperature+10)
         end_temperature += 10
 
+    radius_entry.config(highlightthickness=0)
+    heat_transfer_entry.config(highlightthickness=0)
+    
     update_plot(x, y)
-    result_entry.insert(0, str(x[0]))
-
-def get_k(thermal_conductivity, area, heat_capacity):
-    k = (thermal_conductivity*area)/heat_capacity
-    return k
-
-def get_time(k, t0, t1, ts):
-    t = (-1/k)*log((t1-ts)/(t0-ts))
-    return t
+    result_entry.insert(0, "{:.2f}".format(x[0]))
 
 def update_plot(x, y):
     global figure, plot, canvas
@@ -70,32 +75,32 @@ window.geometry("1000x600+560+200")
 window.resizable(0,0)
 window.config(bg = 'white')
 
-data_frame = Frame(window, bg="white")
-data_frame.pack(side=LEFT, fill=Y, padx = 15, pady = 15) # for data input
-
 plot_frame = Frame(window, bg="white")
 plot_frame.pack(side=LEFT) # for plot
 
-Label(data_frame, text="Рассчет времени остывания\n шарика", bg="white", font="Arial 15 bold").pack(side=TOP, anchor=N) 
+data_frame = Frame(window, bg="white")
+data_frame.pack(side=LEFT, fill=Y, padx = 10, pady = 10) # for data input
+
+Label(data_frame, text="Рассчет времени остывания\n шарика в воздухе", bg="white", font="Arial 15 bold").pack(side=TOP, anchor=N) 
 Label(data_frame, text="Радиус шарика, м", bg="white", font="Arial 15 italic").pack(anchor = W)
-radius_entry = Entry(data_frame, font="Arial 15", relief="groove", borderwidth=3, width=10)
+radius_entry = Entry(data_frame, font="Arial 15", borderwidth=3, relief= RIDGE, width=10)
 radius_entry.pack(pady=5, fill=X, padx=5, anchor = W)
-radius_entry.insert(0, "0.01")
+radius_entry.insert(0, 0.01)
 
 Label(data_frame, text="Материал", bg="white", font="Arial 15 italic").pack(anchor = W)
 choice = StringVar()
 choice.set('Железо')
-materials_list = OptionMenu(data_frame, choice, *materials)
-materials_list.config(bg="white", font="Arial 15")
-materials_list.pack(pady=5, fill=X, padx=5, anchor = W)
+heat_capacities_list = OptionMenu(data_frame, choice, *heat_capacities)
+heat_capacities_list.config(bg="white", relief = RIDGE, font="Arial 15")
+heat_capacities_list.pack(pady=5, fill=X, padx=5, anchor = W)
 
-Label(data_frame, text="Коэффициент теплопроводности", bg="white", font="Arial 15 italic").pack(anchor = W)
-tconductivity_entry = Entry(data_frame, font="Arial 15", relief="groove", borderwidth=3, width=10)
-tconductivity_entry.pack(pady=5, fill=X, padx=5, anchor = W)
-tconductivity_entry.insert(0, "0.01")
+Label(data_frame, text="Коэффициент теплоотдачи", bg="white", font="Arial 15 italic").pack(anchor = W)
+heat_transfer_entry = Entry(data_frame, font="Arial 15", relief=RIDGE, borderwidth=3, width=10)
+heat_transfer_entry.pack(pady=5, fill=X, padx=5, anchor = W)
+heat_transfer_entry.insert(0, 0.01)
 
 Label(data_frame, text="Результат, с", bg="white", font="Arial 15 italic").pack(anchor = W)
-result_entry = Entry(data_frame, font="Arial 15", relief="groove", borderwidth=3, width=10)
+result_entry = Entry(data_frame, font="Arial 15", relief=RIDGE, borderwidth=3, width=10)
 result_entry.pack(pady=5, fill=X, padx=5, anchor = W)
 
 figure = Figure(figsize=(6, 5), dpi=110)
@@ -113,7 +118,6 @@ toolbar = NavigationToolbar2Tk(canvas, plot_frame)
 toolbar.update()
 canvas.get_tk_widget().pack()
 
-Label(data_frame, text="@Горшков Данил, АВТ-113", bg="white", font="Arial 10 italic").pack(anchor = W, side = BOTTOM)
-start_button = Button(data_frame, text="Рассчитать время", bg="white", font="Arial 15 bold", command=make_calc)
+start_button = Button(data_frame, text="Рассчитать время", bg="white", font="Arial 15 bold",relief=RIDGE, command=make_calc)
 start_button.pack(pady=5, fill=X, padx=5, side = BOTTOM, anchor=S)
 window.mainloop()
