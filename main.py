@@ -24,6 +24,8 @@ def make_calc():
     
     try:
         radius = float(radius_entry.get())
+        if (radius <= 0):
+            raise WrongBaseNumber('Wrong number must be greater then zero')
     except:
         radius_entry.config(highlightthickness=2, highlightbackground="red")
         return
@@ -31,27 +33,29 @@ def make_calc():
     try:
         # Коэффициент теплоотдачи
         heat_transfer = float(heat_transfer_entry.get())
+        if (heat_transfer <= 0):
+            raise WrongBaseNumber('Wrong number must be greater then zero')
     except:
         heat_transfer_entry.config(highlightthickness=2, highlightbackground="red")
         return
 
     heat_capacity = heat_capacities[choice.get()]
     area = 4*pi*(radius**2)
-    
-    while (end_temperature != start_temperature):
+    temp = 0
+
+    while (start_temperature - temp >= end_temperature):
 
         k = (heat_transfer*area)/heat_capacity
-        t = (-1/k)*log((end_temperature-air_temperature)/(start_temperature-air_temperature))
-        
+        t = (-1/k)*log((start_temperature-temp-air_temperature)/(start_temperature-air_temperature))
         x.append(t)
-        y.append(end_temperature+10)
-        end_temperature += 10
+        y.append(start_temperature-temp)
+        temp += 10
 
     radius_entry.config(highlightthickness=0)
     heat_transfer_entry.config(highlightthickness=0)
-    
+
     update_plot(x, y)
-    result_entry.insert(0, "{:.2f}".format(x[0]))
+    result_entry.insert(0, "{:.2f}".format(x[-1]))
 
 # Обновление графика
 def update_plot(x, y):
