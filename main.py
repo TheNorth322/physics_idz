@@ -56,7 +56,7 @@ def make_calc():
 
     update_plot(x, y)
     result_entry.insert(0, "{:.2f}".format(x[-1]))
-
+    
 # Обновление графика
 def update_plot(x, y):
     global figure, plot, canvas
@@ -70,9 +70,6 @@ def update_plot(x, y):
     plot.set_ylabel("Температура, К")
     
     canvas.draw()
-    canvas.get_tk_widget().pack()
-    toolbar = NavigationToolbar2Tk(canvas, plot_frame)
-    toolbar.update()
     canvas.get_tk_widget().pack()
 
 # Графический пользовательский интерфейс
@@ -108,7 +105,7 @@ heat_capacities_list.pack(pady=5, fill=X, padx=5, anchor = W)
 Label(data_frame, text="Коэффициент теплоотдачи", bg="white", font="Arial 15 italic").pack(anchor = W)
 heat_transfer_entry = Entry(data_frame, font="Arial 15", relief=RIDGE, borderwidth=3, width=10)
 heat_transfer_entry.pack(pady=5, fill=X, padx=5, anchor = W)
-heat_transfer_entry.insert(0, 0.01)
+heat_transfer_entry.insert(0, 100)
 
 # Поле для вывода результата
 Label(data_frame, text="Результат, с", bg="white", font="Arial 15 italic").pack(anchor = W)
