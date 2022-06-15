@@ -56,13 +56,9 @@ def make_calc():
 
     update_plot(x, y)
     result_entry.insert(0, "{:.2f}".format(x[-1]))
-<<<<<<< HEAD
     
-# Обновление графика
-=======
    
 #Обновление графика
->>>>>>> 8288bed (added tooltip, entryes for base info)
 def update_plot(x, y):
     global figure, plot, canvas
     figure.delaxes(plot)
@@ -75,9 +71,7 @@ def update_plot(x, y):
     plot.set_ylabel("Температура, К")
     
     canvas.draw()
-<<<<<<< HEAD
     canvas.get_tk_widget().pack()
-=======
     canvas.get_tk_widget().pack() 
 
 def change_base_data():
@@ -130,7 +124,6 @@ def CreateToolTip(widget, text):
         toolTip.hidetip()
     widget.bind('<Enter>', enter)
     widget.bind('<Leave>', leave)
->>>>>>> 8288bed (added tooltip, entryes for base info)
 
 # Графический пользовательский интерфейс
 window = Tk()
@@ -163,11 +156,9 @@ heat_capacities_list.config(bg="white", relief = RIDGE, font="Arial 15")
 heat_capacities_list.pack(pady=5, fill=X, padx=5, anchor = W)
 # Поле для ввода коэффициента теплоотдачи
 Label(data_frame, text="Коэффициент теплоотдачи", bg="white", font="Arial 15 italic").pack(anchor = W)
-<<<<<<< HEAD
 heat_transfer_entry = Entry(data_frame, font="Arial 15", relief=RIDGE, borderwidth=3, width=10)
 heat_transfer_entry.pack(pady=5, fill=X, padx=5, anchor = W)
 heat_transfer_entry.insert(0, 100)
-=======
 
 heat_transfer_frame = Frame(data_frame, bg="white")
 heat_transfer_frame.pack()
@@ -178,7 +169,6 @@ heat_transfer_entry.insert(0, 9)
 heat_transfer_help = Button(heat_transfer_frame, font="Arial 15", relief=RIDGE, text="?", borderwidth = 3, bg="white")
 heat_transfer_help.pack(pady=2, padx=2, side = LEFT)
 CreateToolTip(heat_transfer_help, text="Среда - ВОЗДУХ\nСП 50.13330.2012:\nОбобщенные справочные данные:\nα=2...10 (до 25) при свободной конвекции\nα=10...150 (до 300) при принудительной конвекции (ветер, венти\nлятор)")
->>>>>>> 8288bed (added tooltip, entryes for base info)
 
 # Поле для вывода результата
 Label(data_frame, text="Результат, с", bg="white", font="Arial 15 italic").pack(anchor = W)
