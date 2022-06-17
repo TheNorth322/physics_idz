@@ -3,25 +3,106 @@ from tkinter import *
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
-# Теплоемкости металлов
-heat_capacities = {'Железо': 452,
-            'Алюминий': 897,
-            'Медь': 420,
-            'Сталь': 468,
-            'Латунь': 400,
-            'Чугун': 540,
-            'Олово': 228,
-            'Свинец': 128}
+# Данные металлов теплопроводность | температуропроводность | плотность | теплоемкость
+materials = {'Железо': [7874, 452],
+            'Алюминий': [2650, 897],
+            'Медь': [8940, 420],
+            'Сталь': [7850, 468],
+            'Латунь': [8730, 400],
+            'Чугун': [7200, 540],
+            'Олово': [7300, 228],
+            'Свинец': [11370, 128]}
+
+class InvalidStartEndTemperatureValues(Exception):
+    pass
+
+class InvalidStartAirTemperatureValue(Exception):
+    pass
+
+class InvalidEndAirTemperatureValue(Exception):
+    pass
+
+class InvalidAirTemperature(Exception):
+    pass
 
 def make_calc():
     result_entry.delete(0,"end")
     x = []
     y = []
+
+    start_temp_help = CreateToolTip(start_temp_entry, '')
+    end_temp_help = CreateToolTip(end_temp_entry, '')
+    air_temp_help = CreateToolTip(air_temp_entry, '')
+
+    start_temp_help.hidetip()
+    end_temp_help.hidetip()
+    air_temp_help.hidetip()
+    start_temp_entry.config(highlightthickness=0)
+    end_temp_entry.config(highlightthickness=0)
+    air_temp_entry.config(highlightthickness=0)   
+    radius_entry.config(highlightthickness=0)
+    heat_transfer_entry.config(highlightthickness=0)
     
-    start_temperature = float(start_temp_entry.get())
-    end_temperature = float(end_temp_entry.get())
-    air_temperature = float(air_temp_entry.get())
+    #Получение данных и обработка исключений
+    try:
+        start_temperature = float(start_temp_entry.get())
+        end_temperature = float(end_temp_entry.get())
+        air_temperature = float(air_temp_entry.get())
+        if (start_temperature == end_temperature):
+            raise InvalidStartEndTemperatureValues()
+        
+        if (start_temperature ==  air_temperature):
+            raise InvalidStartAirTemperatureValue()
+        
+        if (end_temperature == air_temperature):
+            raise InvalidEndAirTemperatureValue()
+
+        if (start_temperature > end_temperature and air_temperature > end_temperature):
+            raise InvalidAirTemperature()
+        
+        if (start_temperature < end_temperature and air_temperature < end_temperature):
+            raise InvalidAirTemperature()
+
+    except InvalidStartEndTemperatureValues:
+        start_temp_entry.config(highlightthickness=2, highlightbackground="red")
+        end_temp_entry.config(highlightthickness=2, highlightbackground="red")
+        start_temp_help = CreateToolTip(start_temp_entry, text="Значения начальной и конечной температуры должны отличаться!")
+        end_temp_help = CreateToolTip(end_temp_entry, text="Значения начальной и конечной температуры должны отличаться!")
+        return
+
+    except InvalidStartAirTemperatureValue:
+        start_temp_entry.config(highlightthickness=2, highlightbackground="red")
+        air_temp_entry.config(highlightthickness=2, highlightbackground="red")
+        start_temp_help = CreateToolTip(start_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        air_temp_help = CreateToolTip(air_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        return
+
+    except InvalidEndAirTemperatureValue:
+        end_temp_entry.config(highlightthickness=2, highlightbackground="red")
+        air_temp_entry.config(highlightthickness=2, highlightbackground="red")
+        end_temp_help = CreateToolTip(end_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        air_temp_help = CreateToolTip(air_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        return
+
+    except InvalidAirTemperature:
+        air_temp_entry.config(highlightthickness=2, highlightbackground="red")
+        air_temp_help = CreateToolTip(air_temp_entry, text="Неверное значение температуры воздуха\nПроцесс охлаждение: температура воздуха <= конечная температура\nПроцесс нагревания: температура воздуха >= конечная температура")
+        return
     
+    except ValueError:
+        if (start_temp_entry.get() == ''):
+            start_temp_entry.config(highlightthickness=2, highlightbackground="red")
+            start_temp_help = CreateToolTip(start_temp_entry, text="Значение не должно быть пустым!")
+        
+        if (end_temp_entry.get() == ''):
+            end_temp_entry.config(highlightthickness=2, highlightbackground="red")
+            end_temp_help = CreateToolTip(end_temp_entry, text="Значение не должно быть пустым!")
+        
+        if (air_temp_entry.get() == ''):
+            air_temp_entry.config(highlightthickness=2, highlightbackground="red")
+            air_temp_help = CreateToolTip(air_temp_entry, text="Значение не должно быть пустым!")
+        
+        return
     try:
         radius = float(radius_entry.get())
         if (radius <= 0):
@@ -38,22 +119,30 @@ def make_calc():
     except:
         heat_transfer_entry.config(highlightthickness=2, highlightbackground="red")
         return
+   
+    density = materials[choice.get()][0]
+    heat_capacity = materials[choice.get()][1]
+    surface_area = 4*pi*(radius**2)
+    volume = (4/3)*pi * radius**3
+    temp_change = 0
+    t = 0
 
-    heat_capacity = heat_capacities[choice.get()]
-    area = 4*pi*(radius**2)
-    temp = 0
-    
-    while (start_temperature - temp >= end_temperature):
+    while (start_temperature > end_temperature):
 
-        k = (heat_transfer*area)/heat_capacity
-        t = (-1/k)*log((start_temperature-temp-air_temperature)/(start_temperature-air_temperature))
+        t = t + (log(abs(start_temperature-air_temperature))-log(abs(start_temperature-temp_change-air_temperature)))*heat_capacity*density*volume/(heat_transfer*surface_area)
         x.append(t)
-        y.append(start_temperature-temp)
-        temp += 5
+        y.append(start_temperature-temp_change)
+        start_temperature = start_temperature-temp_change
+        temp_change = 1
+    
+    while (start_temperature < end_temperature):
 
-    radius_entry.config(highlightthickness=0)
-    heat_transfer_entry.config(highlightthickness=0)
-
+        t = t + (log(abs(start_temperature-air_temperature))-log(abs(start_temperature+temp_change-air_temperature)))*heat_capacity*density*volume/(heat_transfer*surface_area)
+        x.append(t)
+        y.append(start_temperature+temp_change)
+        start_temperature = start_temperature+temp_change
+        temp_change = 1
+  
     update_plot(x, y)
     result_entry.insert(0, "{:.2f}".format(x[-1]))
     
@@ -124,11 +213,11 @@ def CreateToolTip(widget, text):
         toolTip.hidetip()
     widget.bind('<Enter>', enter)
     widget.bind('<Leave>', leave)
-
+    return toolTip
 # Графический пользовательский интерфейс
 window = Tk()
 window.title("Время остывание металлического шара")
-window.geometry("1000x600+560+200")
+window.geometry("1000x600+450+200")
 window.resizable(0,0)
 window.config(bg = 'white')
 window.protocol("WM_DELETE_WINDOW", on_closing_main_window)
@@ -151,15 +240,12 @@ radius_entry.insert(0, 0.01)
 Label(data_frame, text="Материал", bg="white", font="Arial 15 italic").pack(anchor = W)
 choice = StringVar()
 choice.set('Железо')
-heat_capacities_list = OptionMenu(data_frame, choice, *heat_capacities)
-heat_capacities_list.config(bg="white", relief = RIDGE, font="Arial 15")
-heat_capacities_list.pack(pady=5, fill=X, padx=5, anchor = W)
+materials_list = OptionMenu(data_frame, choice, *materials)
+materials_list.config(bg="white", relief = RIDGE, font="Arial 15")
+materials_list.pack(pady=5, fill=X, padx=5, anchor = W)
+
 # Поле для ввода коэффициента теплоотдачи
 Label(data_frame, text="Коэффициент теплоотдачи", bg="white", font="Arial 15 italic").pack(anchor = W)
-heat_transfer_entry = Entry(data_frame, font="Arial 15", relief=RIDGE, borderwidth=3, width=10)
-heat_transfer_entry.pack(pady=5, fill=X, padx=5, anchor = W)
-heat_transfer_entry.insert(0, 100)
-
 heat_transfer_frame = Frame(data_frame, bg="white")
 heat_transfer_frame.pack()
 
@@ -200,7 +286,7 @@ start_button.pack(pady=5, fill=X, padx=5, side = BOTTOM, anchor=S)
 
 base_data_window = Tk()
 base_data_window.title("Изменение начальных данных")
-base_data_window.geometry("350x275+560+200")
+base_data_window.geometry("350x275+1450+200")
 base_data_window.resizable(0,0)
 base_data_window.config(bg = 'white')
 base_data_window.withdraw()
