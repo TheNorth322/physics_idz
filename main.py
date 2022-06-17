@@ -25,6 +25,13 @@ class InvalidEndAirTemperatureValue(Exception):
 class InvalidAirTemperature(Exception):
     pass
 
+def highlight(widget, text):
+    widget.config(highlightthickness=2, highlightbackground="red")
+    if (text == ''):
+        return
+    
+    widget_tooltip = CreateToolTip(widget, text=text)
+    
 def make_calc():
     result_entry.delete(0,"end")
     x = []
@@ -64,51 +71,38 @@ def make_calc():
             raise InvalidAirTemperature()
 
     except InvalidStartEndTemperatureValues:
-        start_temp_entry.config(highlightthickness=2, highlightbackground="red")
-        end_temp_entry.config(highlightthickness=2, highlightbackground="red")
-        start_temp_help = CreateToolTip(start_temp_entry, text="Значения начальной и конечной температуры должны отличаться!")
-        end_temp_help = CreateToolTip(end_temp_entry, text="Значения начальной и конечной температуры должны отличаться!")
+        highlight(start_temp_entry, text="Значение начальной и конечной температуры должны отличаться!")
+        highlight(end_temp_entry, text="Значение начальной и конечной температуры должны отличаться!")
         return
 
     except InvalidStartAirTemperatureValue:
-        start_temp_entry.config(highlightthickness=2, highlightbackground="red")
-        air_temp_entry.config(highlightthickness=2, highlightbackground="red")
-        start_temp_help = CreateToolTip(start_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
-        air_temp_help = CreateToolTip(air_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        highlight(start_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        highlight(air_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
         return
 
     except InvalidEndAirTemperatureValue:
-        end_temp_entry.config(highlightthickness=2, highlightbackground="red")
-        air_temp_entry.config(highlightthickness=2, highlightbackground="red")
-        end_temp_help = CreateToolTip(end_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
-        air_temp_help = CreateToolTip(air_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        highlight(end_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        highlight(air_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
         return
 
     except InvalidAirTemperature:
-        air_temp_entry.config(highlightthickness=2, highlightbackground="red")
-        air_temp_help = CreateToolTip(air_temp_entry, text="Неверное значение температуры воздуха\nПроцесс охлаждение: температура воздуха <= конечная температура\nПроцесс нагревания: температура воздуха >= конечная температура")
+        highlight(air_temp_entry, text="Неверное значение температуры воздуха\nПроцесс охлаждение: температура воздуха <= конечная температура\nПроцесс нагревания: температура воздуха >= конечная температура")
         return
     
     except ValueError:
         if (start_temp_entry.get() == ''):
-            start_temp_entry.config(highlightthickness=2, highlightbackground="red")
-            start_temp_help = CreateToolTip(start_temp_entry, text="Значение не должно быть пустым!")
-        
+            highlight(start_temp_entry, text="Значение не должно быть пустым!")
         if (end_temp_entry.get() == ''):
-            end_temp_entry.config(highlightthickness=2, highlightbackground="red")
-            end_temp_help = CreateToolTip(end_temp_entry, text="Значение не должно быть пустым!")
-        
+            highlight(end_temp_entry, text="Значение не должно быть пустым!")
         if (air_temp_entry.get() == ''):
-            air_temp_entry.config(highlightthickness=2, highlightbackground="red")
-            air_temp_help = CreateToolTip(air_temp_entry, text="Значение не должно быть пустым!")
-        
+            highlight(air_temp_entry, text="Значение не должно быть пустым!") 
         return
     try:
         radius = float(radius_entry.get())
         if (radius <= 0):
             raise WrongBaseNumber('Wrong number must be greater then zero')
     except:
-        radius_entry.config(highlightthickness=2, highlightbackground="red")
+        highlight(radius_entry, text="Неверное значение радиуса шара\nМеньше или равно нулю, либо содержатся неподдерживаемые символы")
         return
 
     try:
@@ -117,7 +111,7 @@ def make_calc():
         if (heat_transfer <= 0):
             raise WrongBaseNumber('Wrong number must be greater then zero')
     except:
-        heat_transfer_entry.config(highlightthickness=2, highlightbackground="red")
+        highlight(heat_transfer_entry, text="Неверное значение коэффициента теплообмена\nМеньше или равно нулю, либо содержатся неподдерживаемые символы")
         return
    
     density = materials[choice.get()][0]
