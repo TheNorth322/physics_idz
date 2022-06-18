@@ -3,7 +3,7 @@ from tkinter import *
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
-# Данные металлов теплопроводность | температуропроводность | плотность | теплоемкость
+# Данные металлов плотность | теплоемкость
 materials = {'Железо': [7874, 452],
             'Алюминий': [2650, 897],
             'Медь': [8940, 420],
@@ -13,6 +13,7 @@ materials = {'Железо': [7874, 452],
             'Олово': [7300, 228],
             'Свинец': [11370, 128]}
 
+# Исключения
 class InvalidStartEndTemperatureValues(Exception):
     pass
 
@@ -25,31 +26,35 @@ class InvalidEndAirTemperatureValue(Exception):
 class InvalidAirTemperature(Exception):
     pass
 
+# Подсветка виджета при наблюдении исключения
 def highlight(widget, text):
     widget.config(highlightthickness=2, highlightbackground="red")
     if (text == ''):
         return
     
     widget_tooltip = CreateToolTip(widget, text=text)
-    
+    return widget_tooltip
+
+# Основная функция расчета
 def make_calc():
     result_entry.delete(0,"end")
     x = []
     y = []
 
-    start_temp_help = CreateToolTip(start_temp_entry, '')
-    end_temp_help = CreateToolTip(end_temp_entry, '')
-    air_temp_help = CreateToolTip(air_temp_entry, '')
+    # Подсказки при возникновении ошибок
+    start_temp_help = CreateToolTip(start_temp_entry, text='')
+    end_temp_help = CreateToolTip(end_temp_entry, text='')
+    air_temp_help = CreateToolTip(air_temp_entry, text='')
+    radius_entry_help = CreateToolTip(radius_entry, text='')
+    heat_transfer_tooltip = CreateToolTip(heat_transfer_entry, text='')
 
-    start_temp_help.hidetip()
-    end_temp_help.hidetip()
-    air_temp_help.hidetip()
+    # Подсветка полей с неверными данными
     start_temp_entry.config(highlightthickness=0)
     end_temp_entry.config(highlightthickness=0)
-    air_temp_entry.config(highlightthickness=0)   
+    air_temp_entry.config(highlightthickness=0)
     radius_entry.config(highlightthickness=0)
-    heat_transfer_entry.config(highlightthickness=0)
-    
+    heat_transfer_entry.config(highlightthickness=0) 
+
     #Получение данных и обработка исключений
     try:
         start_temperature = float(start_temp_entry.get())
@@ -71,38 +76,38 @@ def make_calc():
             raise InvalidAirTemperature()
 
     except InvalidStartEndTemperatureValues:
-        highlight(start_temp_entry, text="Значение начальной и конечной температуры должны отличаться!")
-        highlight(end_temp_entry, text="Значение начальной и конечной температуры должны отличаться!")
+        start_temp_help = highlight(start_temp_entry, text="Значение начальной и конечной температуры должны отличаться!")
+        end_temp_help = highlight(end_temp_entry, text="Значение начальной и конечной температуры должны отличаться!")
         return
 
     except InvalidStartAirTemperatureValue:
-        highlight(start_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
-        highlight(air_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        start_temp_help = highlight(start_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        air_temp_help = highlight(air_temp_entry, text="Неверные значения начальной температуры тела и температуры\nвоздуха\nДолжны быть разными")
         return
 
     except InvalidEndAirTemperatureValue:
-        highlight(end_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
-        highlight(air_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        end_temp_help = highlight(end_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
+        air_temp_help = highlight(air_temp_entry, text="Неверные значения конечной температуры тела и температуры\nвоздуха\nДолжны быть разными")
         return
 
     except InvalidAirTemperature:
-        highlight(air_temp_entry, text="Неверное значение температуры воздуха\nПроцесс охлаждение: температура воздуха <= конечная температура\nПроцесс нагревания: температура воздуха >= конечная температура")
+        air_temp_help = highlight(air_temp_entry, text="Неверное значение температуры воздуха\nПроцесс охлаждение: температура воздуха <= конечная температура\nПроцесс нагревания: температура воздуха >= конечная температура")
         return
     
     except ValueError:
         if (start_temp_entry.get() == ''):
-            highlight(start_temp_entry, text="Значение не должно быть пустым!")
+            start_temp_help = highlight(start_temp_entry, text="Значение не должно быть пустым!")
         if (end_temp_entry.get() == ''):
-            highlight(end_temp_entry, text="Значение не должно быть пустым!")
+            end_temp_help = highlight(end_temp_entry, text="Значение не должно быть пустым!")
         if (air_temp_entry.get() == ''):
-            highlight(air_temp_entry, text="Значение не должно быть пустым!") 
+            air_temp_help = highlight(air_temp_entry, text="Значение не должно быть пустым!") 
         return
     try:
         radius = float(radius_entry.get())
         if (radius <= 0):
             raise WrongBaseNumber('Wrong number must be greater then zero')
     except:
-        highlight(radius_entry, text="Неверное значение радиуса шара\nМеньше или равно нулю, либо содержатся неподдерживаемые символы")
+        radius_temp_help = highlight(radius_entry, text="Неверное значение радиуса шара\nМеньше или равно нулю, либо содержатся неподдерживаемые символы")
         return
 
     try:
@@ -111,9 +116,9 @@ def make_calc():
         if (heat_transfer <= 0):
             raise WrongBaseNumber('Wrong number must be greater then zero')
     except:
-        highlight(heat_transfer_entry, text="Неверное значение коэффициента теплообмена\nМеньше или равно нулю, либо содержатся неподдерживаемые символы")
+        heat_transfer_help = highlight(heat_transfer_entry, text="Неверное значение коэффициента теплообмена\nМеньше или равно нулю, либо содержатся неподдерживаемые символы")
         return
-   
+  
     density = materials[choice.get()][0]
     heat_capacity = materials[choice.get()][1]
     surface_area = 4*pi*(radius**2)
