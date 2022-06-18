@@ -116,7 +116,7 @@ def make_calc():
         if (heat_transfer <= 0):
             raise WrongBaseNumber('Wrong number must be greater then zero')
     except:
-        heat_transfer_help = highlight(heat_transfer_entry, text="Неверное значение коэффициента теплообмена\nМеньше или равно нулю, либо содержатся неподдерживаемые символы")
+        heat_transfer_help = highlight(heat_transfer_entry, text="Неверное значение коэффициента теплоотдачи\nМеньше или равно нулю, либо содержатся неподдерживаемые символы")
         return
   
     density = materials[choice.get()][0]
@@ -276,7 +276,7 @@ toolbar = NavigationToolbar2Tk(canvas, plot_frame)
 toolbar.update()
 canvas.get_tk_widget().pack()
 
-base_data_button = Button(data_frame, bg="white", font="Arial 12 bold", text="Изменить начальные данных", relief=RIDGE, command=change_base_data)
+base_data_button = Button(data_frame, bg="white", font="Arial 12 bold", text="Изменить начальные данные", relief=RIDGE, command=change_base_data)
 base_data_button.pack(pady=5, fill=X, padx=5)
 
 # Кнопка запуска программы
